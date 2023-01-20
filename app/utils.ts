@@ -2,6 +2,7 @@ import { useMatches } from "@remix-run/react";
 import { useMemo } from "react";
 
 import type { User } from "~/models/user.server";
+import { OrderStatus } from "./shared/enum/enum";
 
 const DEFAULT_REDIRECT = "/";
 
@@ -69,3 +70,30 @@ export function useUser(): User {
 export function validateEmail(email: unknown): email is string {
   return typeof email === "string" && email.length > 3 && email.includes("@");
 }
+
+export function parseFormData(data: FormData): { [key: string]: any } {
+  let object: { [key: string]: any } = {};
+  data.forEach((value, key) => {
+    object[key] = value;
+  });
+  return object;
+}
+
+export const getOrderStatusLocalized = (
+  orderStatus: OrderStatus
+): { status: string; class: string } => {
+  switch (orderStatus) {
+    case OrderStatus.NEW:
+      return { status: "Nowy", class: "badge-secondary" };
+    case OrderStatus.IN_PROGRESS:
+      return { status: "W trakcie", class: "badge-info" };
+    case OrderStatus.DELIVERY:
+      return { status: "W dostawie", class: "badge-success" };
+    case OrderStatus.CONFIRMED:
+      return { status: "Potwierdzone", class: "badge-primary" };
+    case OrderStatus.DELIVERED:
+      return { status: "Dostarczone", class: "badge-active" };
+    case OrderStatus.ERROR:
+      return { status: "Błąd!", class: "badge-error" };
+  }
+};

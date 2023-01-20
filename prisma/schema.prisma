@@ -8,31 +8,61 @@ generator client {
 }
 
 model User {
-  id    String @id @default(cuid())
-  email String @unique
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  password Password?
-  notes    Note[]
+  id            Int     @id @default(autoincrement())
+  role          String
+  passwordHash String
+  email         String  @unique
+  phoneNumber  String
+  orders        Order[]
 }
 
-model Password {
-  hash String
-
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-  userId String @unique
+model Inventory {
+  name              String              @unique
+  id                Int                 @id @default(autoincrement())
+  qty               Float
+  unit              String
+  productInventory ProductInventory[]
 }
 
-model Note {
-  id    String @id @default(cuid())
-  title String
-  body  String
+model Order {
+  id                    Int             @id @default(autoincrement())
+  userId               Int
+  user                  User            @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  address               String
+  madeDateTime        DateTime        @default(now())
+  estArrivalDateTime DateTime
+  status                String
+  paymentType          String
+  paymentStatus        String
+  orderProduct         OrderProduct[]
+}
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+model OrderProduct {
+  productId Int
+  product    Product @relation(fields: [productId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  orderId   Int
+  order      Order   @relation(fields: [orderId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  qty        Int
 
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-  userId String
+  @@id([productId, orderId])
+}
+
+model ProductInventory {
+  productId             Int
+  product                Product   @relation(fields: [productId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  inventoryId           Int
+  inventory              Inventory @relation(fields: [inventoryId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  inventoryQtyRequired Float
+
+  @@id([productId, inventoryId])
+}
+
+model Product {
+  id                Int                 @id @default(autoincrement())
+  name              String              @unique
+  pictureUrl String
+  description       String
+  price             Float
+  productInventory ProductInventory[]
+  orderProduct     OrderProduct[]
 }

@@ -3,6 +3,8 @@ import invariant from "tiny-invariant";
 
 import type { User } from "~/models/user.server";
 import { getUserById } from "~/models/user.server";
+import { Intent } from "./shared/enum/enum";
+import { RoleAllowedIntents } from "./shared/roleAllowedIntents";
 
 invariant(process.env.SESSION_SECRET, "SESSION_SECRET must be set");
 
@@ -49,7 +51,7 @@ export async function requireUserId(
   const userId = await getUserId(request);
   if (!userId) {
     const searchParams = new URLSearchParams([["redirectTo", redirectTo]]);
-    throw redirect(`/login?${searchParams}`);
+    throw redirect(`/intra/login?${searchParams}`);
   }
   return userId;
 }
@@ -63,6 +65,28 @@ export async function requireUser(request: Request) {
   throw await logout(request);
 }
 
+export async function requireUserWithIntent(request: Request, intent: Intent) {
+  const user = await requireUser(request);
+  const userIntents = RoleAllowedIntents[user.role];
+
+  if (!userIntents.includes(intent)) {
+    const searchParams = new URLSearchParams([
+      ["redirectTo", new URL(request.url).pathname],
+    ]);
+    throw redirect(`/intra/login?${searchParams}`);
+  }
+
+  if (user) return user;
+
+  throw await logout(request);
+}
+
+export async function hasIntent(user: User, intent: Intent) {
+  const userIntents = RoleAllowedIntents[user.role];
+
+  return userIntents.includes(intent);
+}
+
 export async function createUserSession({
   request,
   userId,
@@ -70,7 +94,7 @@ export async function createUserSession({
   redirectTo,
 }: {
   request: Request;
-  userId: string;
+  userId: number;
   remember: boolean;
   redirectTo: string;
 }) {
