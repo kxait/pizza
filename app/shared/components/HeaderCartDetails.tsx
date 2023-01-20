@@ -67,7 +67,7 @@ export default function HeaderCartDetails() {
           </ul>
         </div>
         <span className="text-info">
-          Suma: ${Number(cartSubtotal).toFixed(2)}
+          Suma: {Number(cartSubtotal).toFixed(2)} zł
         </span>
         {cartSubtotal !== 0 && (
           <div className="card-actions">

@@ -28,13 +28,13 @@ export default function ProductCard({
       <div className="card-body">
         <h2 className="card-title">{product.name}</h2>
         <p>{product.description}</p>
-        <p>
+        <div>
           {product.productInventory.map((productInventory) => (
             <div
               key={`${productInventory.productId}-${productInventory.inventoryId}`}
             >{`- ${productInventory.inventory.name}`}</div>
           ))}
-        </p>
+        </div>
         <div className="text-xl">{product.price} zł</div>
         {!isAvailable(product) && (
           <div className="badge-error badge gap-2">

@@ -1,6 +1,7 @@
 import { Link, useLoaderData } from "@remix-run/react";
 import type { LoaderArgs } from "@remix-run/server-runtime";
 import { json } from "@remix-run/server-runtime";
+import React from "react";
 import { getAllOrders } from "~/models/order.server";
 import { requireUserWithIntent } from "~/session.server";
 import { Intent, OrderStatus } from "~/shared/enum/enum";
@@ -52,15 +53,39 @@ export async function loader({ request }: LoaderArgs) {
     };
   });
 
-  return json(formatted);
+  const formattedFiltered = formatted.filter((order) =>
+    [OrderStatus.NEW, OrderStatus.IN_PROGRESS].includes(
+      order.status as OrderStatus
+    )
+  );
+
+  return json(formattedFiltered);
 }
 
 export default function Index() {
   const sus = useLoaderData<typeof loader>();
 
+  React.useEffect(() => {
+    const refreshIfStale = async () => {
+      const { stale } = await (
+        await fetch(`/pull/cook`, {
+          method: "POST",
+          body: JSON.stringify({
+            orderCount: sus.length,
+            lastOrder:
+              sus.length === 0 ? 0 : Math.max(...sus.map((order) => order.id)),
+          }),
+        })
+      ).json();
+      if (stale) location.reload();
+    };
+
+    setInterval(refreshIfStale, 1000);
+  }, []);
+
   return (
     <div className="container m-auto mt-4 w-full  max-w-4xl">
-      <div className="my-4 text-4xl">no dalej kuchciku</div>
+      <div className="my-4 text-4xl">Zamówienia do realizacji</div>
       <div>
         {sus.map((sussy) => {
           const orderStatus = getOrderStatusLocalized(

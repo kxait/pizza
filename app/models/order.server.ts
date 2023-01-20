@@ -1,7 +1,7 @@
 import type { Order, Product } from "@prisma/client";
 import { parseFormData, validateEmail } from "~/utils";
 import { prisma } from "~/db.server";
-import type { OrderStatus } from "~/shared/enum/enum";
+import { OrderStatus, PaymentStatus } from "~/shared/enum/enum";
 
 export type { Order, OrderProduct } from "@prisma/client";
 
@@ -25,6 +25,61 @@ export function getAllOrders() {
     },
     orderBy: { id: "desc" },
   });
+}
+
+export async function isClientOrderInformationStale(
+  orderId: number,
+  orderStatus: OrderStatus,
+  estArrivalDateTime: Date,
+  paymentStatus: PaymentStatus
+) {
+  const record = await prisma.order.findUnique({ where: { id: orderId } });
+  return (
+    record?.estArrivalDateTime.toISOString() !==
+      estArrivalDateTime.toISOString() ||
+    orderStatus !== record?.status ||
+    paymentStatus !== record?.paymentStatus
+  );
+}
+
+export async function isDeliveryScreenInformationStale(
+  orderCount: number,
+  lastOrder: number
+) {
+  const expectedOrderCount = await prisma.order.count({
+    where: { status: OrderStatus.DELIVERY },
+  });
+  const expectedLastOrder =
+    (
+      await prisma.order.findFirst({
+        take: 1,
+        orderBy: { id: "desc" },
+        where: { status: OrderStatus.DELIVERY },
+        select: { id: true },
+      })
+    )?.id ?? 0;
+
+  return orderCount !== expectedOrderCount || lastOrder !== expectedLastOrder;
+}
+
+export async function isCookScreenInformationStale(
+  orderCount: number,
+  lastOrder: number
+) {
+  const expectedOrderCount = await prisma.order.count({
+    where: { status: { in: [OrderStatus.IN_PROGRESS, OrderStatus.NEW] } },
+  });
+  const expectedLastOrder =
+    (
+      await prisma.order.findFirst({
+        take: 1,
+        orderBy: { id: "desc" },
+        where: { status: { in: [OrderStatus.IN_PROGRESS, OrderStatus.NEW] } },
+        select: { id: true },
+      })
+    )?.id ?? 0;
+
+  return orderCount !== expectedOrderCount || lastOrder !== expectedLastOrder;
 }
 
 export function getOrder(id: number) {

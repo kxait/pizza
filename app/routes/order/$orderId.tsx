@@ -63,14 +63,8 @@ export default function OrderView() {
 
   const orderStatus = getOrderStatusLocalized(order?.status as OrderStatus);
 
-  const getOrderTimeDifference = () => {
-    const x = dateDiffToString(
-      new Date(order?.estArrivalDateTime as string),
-      new Date()
-    );
-    console.log(x);
-    return x;
-  };
+  const getOrderTimeDifference = () =>
+    dateDiffToString(new Date(order?.estArrivalDateTime as string), new Date());
 
   const [timeLeftHms, setTimeLeftHms] = React.useState(
     getOrderTimeDifference()
@@ -84,6 +78,24 @@ export default function OrderView() {
 
     return () => clearInterval(interval);
   });
+
+  React.useEffect(() => {
+    const refreshIfStale = async () => {
+      const { stale } = await (
+        await fetch(`/pull/clientOrder/${order?.id}`, {
+          method: "POST",
+          body: JSON.stringify({
+            orderStatus: order?.status as string,
+            expectedDateTime: order?.estArrivalDateTime,
+            paymentStatus: order?.paymentStatus,
+          }),
+        })
+      ).json();
+      if (stale) location.reload();
+    };
+
+    setInterval(refreshIfStale, 1000);
+  }, []);
 
   return order == undefined ? (
     <div>błąd!</div>
@@ -119,17 +131,21 @@ export default function OrderView() {
                 <th>Cena</th>
               </tr>
             </thead>
-            {sus?.map((item, key) => {
-              return (
-                <tr key={key}>
-                  <td>{key + 1}</td>
-                  <td>{item.product.name}</td>
-                  <td>{item.qty}</td>
-                  <td>{item.product.price} zł</td>
-                  <td>{Number(item.qty * item.product.price).toFixed(2)} zł</td>
-                </tr>
-              );
-            })}
+            <tbody>
+              {sus?.map((item, key) => {
+                return (
+                  <tr key={key}>
+                    <td>{key + 1}</td>
+                    <td>{item.product.name}</td>
+                    <td>{item.qty}</td>
+                    <td>{item.product.price} zł</td>
+                    <td>
+                      {Number(item.qty * item.product.price).toFixed(2)} zł
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
           </table>
           <div className="text-lg">
             Cena produktów:&nbsp;

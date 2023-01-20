@@ -116,17 +116,21 @@ export default function OrderView() {
                 <th>Cena</th>
               </tr>
             </thead>
-            {sus?.map((item, key) => {
-              return (
-                <tr key={key}>
-                  <td>{key + 1}</td>
-                  <td>{item.product.name}</td>
-                  <td>{item.qty}</td>
-                  <td>{item.product.price} zł</td>
-                  <td>{Number(item.qty * item.product.price).toFixed(2)} zł</td>
-                </tr>
-              );
-            })}
+            <tbody>
+              {sus?.map((item, key) => {
+                return (
+                  <tr key={key}>
+                    <td>{key + 1}</td>
+                    <td>{item.product.name}</td>
+                    <td>{item.qty}</td>
+                    <td>{item.product.price} zł</td>
+                    <td>
+                      {Number(item.qty * item.product.price).toFixed(2)} zł
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
           </table>
           <div className="text-lg">
             Cena produktów:&nbsp;

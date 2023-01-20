@@ -145,7 +145,7 @@ export default function Index() {
             <div className="text-lg">
               Suma:&nbsp;
               <span className="text-xl text-primary-content">
-                {Number(subtotal + 9.99).toFixed(2)}
+                {Number(subtotal + 9.99).toFixed(2)} zł
               </span>
             </div>
           </div>

@@ -1,4 +1,4 @@
-import { Product } from "@prisma/client";
+import type { Product } from "@prisma/client";
 import React from "react";
 import useLocalStorage from "~/hooks/useLocalStorage";
 
