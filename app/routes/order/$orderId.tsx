@@ -26,6 +26,24 @@ export async function loader({ params, request }: LoaderArgs) {
   return json({ order, shouldReset });
 }
 
+function dateDiffToString(a: Date, b: Date) {
+  // make checks to make sure a and b are not null
+  // and that they are date | integers types
+
+  let diff = a.getTime() - b.getTime();
+
+  if (diff < 0) return { error: true, h: 0, m: 0, s: 0 };
+  const ms = diff % 1000;
+  diff = (diff - ms) / 1000;
+  const ss = diff % 60;
+  diff = (diff - ss) / 60;
+  const mm = diff % 60;
+  diff = (diff - mm) / 60;
+  const hh = diff % 24;
+
+  return { error: false, h: hh, m: mm, s: ss };
+}
+
 export default function OrderView() {
   const params = useLoaderData<typeof loader>();
   const order = params.order;
@@ -44,6 +62,28 @@ export default function OrderView() {
     .reduce((sum, cur) => sum + cur, 0);
 
   const orderStatus = getOrderStatusLocalized(order?.status as OrderStatus);
+
+  const getOrderTimeDifference = () => {
+    const x = dateDiffToString(
+      new Date(order?.estArrivalDateTime as string),
+      new Date()
+    );
+    console.log(x);
+    return x;
+  };
+
+  const [timeLeftHms, setTimeLeftHms] = React.useState(
+    getOrderTimeDifference()
+  );
+
+  React.useEffect(() => {
+    const interval = setInterval(
+      () => setTimeLeftHms(getOrderTimeDifference()),
+      1000
+    );
+
+    return () => clearInterval(interval);
+  });
 
   return order == undefined ? (
     <div>błąd!</div>
@@ -108,6 +148,28 @@ export default function OrderView() {
             </span>
           </div>
         </div>
+        {[OrderStatus.DELIVERY, OrderStatus.IN_PROGRESS].includes(
+          order.status as OrderStatus
+        ) && (
+          <>
+            <div className="m-auto w-fit text-4xl">Oczekiwany czas dostawy</div>
+            <div className="m-auto w-fit text-6xl text-primary-content">
+              <span className="countdown font-mono">
+                <span
+                  style={{ "--value": timeLeftHms.h } as React.CSSProperties}
+                ></span>
+                :
+                <span
+                  style={{ "--value": timeLeftHms.m } as React.CSSProperties}
+                ></span>
+                :
+                <span
+                  style={{ "--value": timeLeftHms.s } as React.CSSProperties}
+                ></span>
+              </span>
+            </div>
+          </>
+        )}
       </div>
     </div>
   );

@@ -1,7 +1,7 @@
 import type { Order, Product } from "@prisma/client";
 import { parseFormData, validateEmail } from "~/utils";
 import { prisma } from "~/db.server";
-import { OrderStatus } from "~/shared/enum/enum";
+import type { OrderStatus } from "~/shared/enum/enum";
 
 export type { Order, OrderProduct } from "@prisma/client";
 
@@ -10,11 +10,20 @@ export function getAllOrders() {
     include: {
       orderProduct: {
         include: {
-          product: true,
+          product: {
+            include: {
+              productInventory: {
+                include: {
+                  inventory: true,
+                },
+              },
+            },
+          },
         },
       },
       user: true,
     },
+    orderBy: { id: "desc" },
   });
 }
 
@@ -85,28 +94,6 @@ export async function createOrder(formData: FormData): Promise<{
 
   let user = await prisma.user.findUnique({ where: { email: data["email"] } });
 
-  if (user === null) {
-    user = await prisma.user.create({
-      data: {
-        email: data["email"] as string,
-        passwordHash: "none",
-        phoneNumber: data["phone"],
-        role: "CLIENT",
-      },
-    });
-  }
-
-  const order = await prisma.order.create({
-    data: {
-      address: data["address"] as string,
-      estArrivalDateTime: new Date(),
-      paymentStatus: "PENDING",
-      paymentType: data["payment"] as string,
-      status: "NEW",
-      userId: user.id,
-    },
-  });
-
   const uniqueProducts = products.filter(
     (product, id) => products.findIndex((p) => p.id === product.id) === id
   );
@@ -115,11 +102,17 @@ export async function createOrder(formData: FormData): Promise<{
     count: products.filter((p) => p.id === product.id).length,
   }));
 
+  const getProductCount = (productId: number) => {
+    return (
+      productsWithCount.find((x) => x.product.id === productId)?.count ?? 0
+    );
+  };
+
   let ingredientIdsWithRequiredQty: { [key: number]: number } = {};
 
   (
     await prisma.productInventory.findMany({
-      select: { inventory: true, product: true },
+      select: { inventory: true, product: true, inventoryQtyRequired: true },
       where: {
         productId: {
           in: uniqueProducts.map((uniqueProduct) => uniqueProduct.id),
@@ -127,12 +120,21 @@ export async function createOrder(formData: FormData): Promise<{
       },
     })
   )
-    .flatMap((x) => x.inventory)
-    .map((x) => ({ id: x.id, qty: x.qty }))
+    .flatMap((x) => ({
+      inventory: x.inventory,
+      product: x.product,
+      qtyRequired: x.inventoryQtyRequired,
+    }))
+    .map((x) => ({
+      productId: x.product.id,
+      inventoryId: x.inventory.id,
+      qty: x.qtyRequired,
+    }))
     .forEach(
       (x) =>
-        (ingredientIdsWithRequiredQty[x.id] =
-          (ingredientIdsWithRequiredQty[x.id] ?? 0) + x.qty)
+        (ingredientIdsWithRequiredQty[x.inventoryId] =
+          (ingredientIdsWithRequiredQty[x.inventoryId] ?? 0) +
+          x.qty * getProductCount(x.productId))
     );
 
   const requiredIngredients = Object.keys(ingredientIdsWithRequiredQty).map(
@@ -154,6 +156,28 @@ export async function createOrder(formData: FormData): Promise<{
       hasFieldErrors,
       result: null,
     };
+
+  if (user === null) {
+    user = await prisma.user.create({
+      data: {
+        email: data["email"] as string,
+        passwordHash: "none",
+        phoneNumber: data["phone"],
+        role: "CLIENT",
+      },
+    });
+  }
+
+  const order = await prisma.order.create({
+    data: {
+      address: data["address"] as string,
+      estArrivalDateTime: new Date(),
+      paymentStatus: "PENDING",
+      paymentType: data["payment"] as string,
+      status: "NEW",
+      userId: user.id,
+    },
+  });
 
   console.log(ingredientQtys, ingredientIdsWithRequiredQty);
 

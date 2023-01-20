@@ -1,21 +1,21 @@
-- [ ] kierownik
-  - [ ] rewizja stanu magazynowego półproduktów
-  - [ ] OPTIONAL wprowadzenie zapotrzebowania na produkty do systemu
-- [ ] klient
+- [x] kierownik
+  - [x] rewizja stanu magazynowego półproduktów
+  - [x] OPTIONAL wprowadzenie zapotrzebowania na produkty do systemu
+- [x] klient
   - [x] przegladanie oferty produktow pizzerii w wybranym lokalu
   - [x] zlozenie zamowienia z roznymi opcjami platnosci (portfele internetowe, BLIK, przelewy blyskawiczne, platnosc przy odbiorze karta/gotowka)
   - [x] podglad aktualnego stanu zlozonego zamowienia (razem z informacja GPS o lokalizacji dostawcy w trakcie dowozu (NA SWIRZO XD))
   - [x] OPTIONAL wglad w informacje o firmie, godzinach otwarcia poszczegolnych lokali, danych kontaktowym i adresowych etc
-  - [ ] zamowienie ma sciagac itemy z inventory
-- [ ] dostawca
-  - [ ] wglad w liste zamowien do dostarczenia
-  - [ ] wglad w szczegoly indywidualnego zamowienia
-  - [ ] zarzadzanie statusem zamowien
-- [ ] kucharz
-  - [ ] wglad w liste zamowien do realizacji
-  - [ ] wglad w szczegoly indywidualnego zamowienia
-  - [ ] zarzadzanie statusem zamowien
-- [ ] oprogramowanie
+  - [x] zamowienie ma sciagac itemy z inventory
+- [x] dostawca
+  - [x] wglad w liste zamowien do dostarczenia
+  - [x] wglad w szczegoly indywidualnego zamowienia
+  - [x] zarzadzanie statusem zamowien
+- [x] kucharz
+  - [x] wglad w liste zamowien do realizacji
+  - [x] wglad w szczegoly indywidualnego zamowienia
+  - [x] zarzadzanie statusem zamowien
+- [x] oprogramowanie
   - [x] automatycznie aktualizowanie danych o stanie magazynowym na podstawie zrealizowanych zamowien
 
 home - informacje o restauracji
