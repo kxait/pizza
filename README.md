@@ -25,3 +25,11 @@
 ## deployment
 
 - see `start.sh`
+
+![Usage example](https://i.imgur.com/e1CVk5I.png)
+![More usage less example](https://i.imgur.com/OX0I9wY.png)
+![Less usage more example](https://i.imgur.com/XuPjabw.png)
+![A bit of example, a bit of usage](https://i.imgur.com/zmgXX98.png)
+![No usage, all example](https://i.imgur.com/lR6AUVV.png)
+
+
