@@ -1,6 +1,6 @@
 # pizza
 
-**DISCLAIMER: this project was made in a couple of hours!**
+
 
 ## stack
 
