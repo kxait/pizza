@@ -24,6 +24,4 @@
 
 ## deployment
 
-- use `npm run dev` to run dev server
-- not sure what you should do if you want to deploy somewhere else lol
-- this is a regular remix app
+- see `start.sh`
